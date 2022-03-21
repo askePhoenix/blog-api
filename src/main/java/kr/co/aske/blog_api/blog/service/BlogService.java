@@ -6,6 +6,7 @@ import kr.co.aske.blog_api.blog.dto.response.LoadById_BlogDto;
 import kr.co.aske.blog_api.blog.repository.BlogRepository;
 import kr.co.aske.blog_api.blog.repository.BlogRepositoryDsl;
 import kr.co.aske.blog_api.user.domain.UserInfo;
+import kr.co.aske.blog_api.user.repository.UserRepositoryDsl;
 import kr.co.aske.blog_api.util.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ import org.springframework.util.StringUtils;
 public class BlogService {
     private final BlogRepository repository;
     private final BlogRepositoryDsl repositoryDsl;
+
+    private final UserRepositoryDsl userRepositoryDsl;
 
     /*
      * CRUD
@@ -30,14 +33,18 @@ public class BlogService {
             throw new NullPointerException("duple domain : " + domain);
 
         // valid : empty domain
-        if( !StringUtils.hasText(domain) )
+        if (!StringUtils.hasText(domain))
             throw new NullPointerException("empty domain");
 
         // valid : userId is null
-        if( null == userId ) throw new NullPointerException("userId is null");
+        if (null == userId) throw new NullPointerException("userId is null");
+
+        // valid : not exist user
+        if (!userRepositoryDsl.exist(userId))
+            throw new NullPointerException("not exist user");
 
         // valid : already have blog
-        if( repositoryDsl.existByOwner(userId) )
+        if (repositoryDsl.existByOwner(userId))
             throw new NullPointerException("already have blog id : " + repositoryDsl.firstExistByOwner(userId));
 
         Long id = repository.save(
@@ -55,16 +62,14 @@ public class BlogService {
     public LoadByDomain_BlogDto loadByDomain(
             String domain
     ) {
-
-        return new LoadByDomain_BlogDto();
+        return repositoryDsl.findByDomain(domain);
     }
 
     // load by id
     public LoadById_BlogDto loadById(
             Long id
     ) {
-
-        return new LoadById_BlogDto();
+        return repositoryDsl.findById(id);
     }
 
     // put domain

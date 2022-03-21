@@ -1,10 +1,13 @@
 package kr.co.aske.blog_api.blog.service;
 
 import kr.co.aske.blog_api.blog.domain.BlogInfo;
+import kr.co.aske.blog_api.blog.dto.response.LoadByDomain_BlogDto;
+import kr.co.aske.blog_api.blog.dto.response.LoadById_BlogDto;
 import kr.co.aske.blog_api.blog.repository.BlogRepository;
 import kr.co.aske.blog_api.blog.repository.BlogRepositoryDsl;
 import kr.co.aske.blog_api.user.domain.UserInfo;
 import kr.co.aske.blog_api.user.service.UserService;
+import kr.co.aske.blog_api.util.dto.ResponseDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -110,7 +113,7 @@ class BlogServiceTest {
 
     @Test
     @Transactional
-    @DisplayName("userId is null")
+    @DisplayName("사용자 ID 값이 없는 경우")
     void save_userId_idNull() {
         // given
         final String domain = "domain1";
@@ -127,24 +130,58 @@ class BlogServiceTest {
 
     @Test
     @Transactional
-    void loadByDomain() {
+    @DisplayName("사용자 ID 값이 삭제된 경우")
+    void save_userId_notExist() {
         // given
+        final String domain = "domain1";
 
         // when
+        Throwable exception = Assertions.assertThrows(RuntimeException.class,
+                () -> service.save(3L, domain));
 
         // then
-        fail();
+        Assertions.assertEquals(
+                "not exist user", exception.getMessage()
+        );
     }
 
     @Test
     @Transactional
-    void loadById() {
+    @DisplayName("도메인으로 검색")
+    void loadByDomain() {
         // given
+        Long userId = userService
+                .save("blog@save.test", "test", "blogTest").getId();
+        final String domain = "domain1";
 
+        ResponseDto successDto = service.save(userId, domain);
         // when
+        LoadByDomain_BlogDto resultDto = service.loadByDomain(domain);
 
         // then
-        fail();
+        Assertions.assertEquals(successDto.getMessage(), "처리 완료");
+        Assertions.assertEquals("blogTest", resultDto.getOwner_name());
+        Assertions.assertEquals(successDto.getId(), resultDto.getId());
+        Assertions.assertEquals(userId, resultDto.getOwner_id());
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("아이디로 검색")
+    void loadById() {
+        // given
+        Long userId = userService
+                .save("blog@save.test", "test", "blogTest").getId();
+        final String domain = "domain12";
+        ResponseDto successDto = service.save(userId, domain);
+        // when
+        LoadById_BlogDto resultDto = service.loadById(successDto.getId());
+
+        // then
+        Assertions.assertEquals(successDto.getMessage(), "처리 완료");
+        Assertions.assertEquals("blogTest", resultDto.getOwner_name());
+        Assertions.assertEquals("domain12", resultDto.getDomain());
+        Assertions.assertEquals(userId, resultDto.getOwner_id());
     }
 
     @Test

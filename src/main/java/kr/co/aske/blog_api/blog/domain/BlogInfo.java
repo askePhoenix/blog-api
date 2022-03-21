@@ -32,22 +32,22 @@ public class BlogInfo {
     private String domain;
 
     @CreationTimestamp
-    private LocalDateTime startAt;
+    private LocalDateTime createAt;
 
     @UpdateTimestamp
-    private LocalDateTime endAt;
+    private LocalDateTime updateAt;
 
     @Column(name = "is_enable")
     private Boolean isEnable;
 
 
     @Builder
-    public BlogInfo(Long id, UserInfo owner, String domain, LocalDateTime startAt, LocalDateTime endAt, Boolean isEnable) {
+    public BlogInfo(Long id, UserInfo owner, String domain, LocalDateTime createAt, LocalDateTime updateAt, Boolean isEnable) {
         this.id = id;
         this.owner = owner;
         this.domain = domain;
-        this.startAt = startAt;
-        this.endAt = endAt;
+        this.createAt = createAt;
+        this.updateAt = updateAt;
         this.isEnable = isEnable;
     }
 }
